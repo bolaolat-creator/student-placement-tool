@@ -3,21 +3,19 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BOPC - Student Placement Tool</title>
+    <title>BOPC - Academic Placement & Career Audit</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
-        :root { --blue: #1a73e8; --green: #34a853; --orange: #fbbc04; --grey: #5f6368; }
+        :root { --blue: #0d47a1; --green: #2e7d32; --orange: #ef6c00; --grey: #546e7a; }
         body { font-family: 'Segoe UI', sans-serif; background: #f4f6f9; padding: 20px; }
-        .container { max-width: 1000px; margin: 0 auto; background: white; padding: 40px; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.08); position: relative; }
+        .container { max-width: 1000px; margin: 0 auto; background: white; padding: 40px; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.08); }
         
-        /* Official School Header */
         .school-header { text-align: center; margin-bottom: 30px; border-bottom: 4px double var(--blue); padding-bottom: 20px; }
-        .school-name { font-size: 28px; font-weight: bold; color: #0d47a1; margin: 0; text-transform: uppercase; letter-spacing: 1px; }
-        .school-motto { font-style: italic; color: #555; margin: 5px 0; font-size: 14px; }
+        .school-name { font-size: 30px; font-weight: bold; color: var(--blue); margin: 0; text-transform: uppercase; }
         
         .header-section { display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 15px; margin-bottom: 30px; }
         .student-input { display: flex; flex-direction: column; gap: 5px; }
-        .student-input input, .student-input select { padding: 10px; border: 1px solid #ccc; border-radius: 5px; }
+        .student-input input { padding: 10px; border: 1px solid #ccc; border-radius: 5px; }
 
         .subject-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; }
         @media (max-width: 768px) { .subject-grid { grid-template-columns: 1fr; } }
@@ -30,21 +28,18 @@
         .subject-row input { width: 45px; padding: 4px; text-align: center; border: 1px solid #ccc; border-radius: 4px; }
 
         .btn-main { background: var(--blue); color: white; padding: 12px 30px; border: none; border-radius: 5px; font-weight: bold; cursor: pointer; margin: 5px; }
-        .btn-print { background: var(--grey); }
-
+        
         #reportOutput { display: none; margin-top: 40px; border-top: 2px solid #333; padding-top: 20px; }
         .report-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; }
         
         .audit-table { width: 100%; border-collapse: collapse; font-size: 12px; }
         .audit-table th, .audit-table td { text-align: left; padding: 6px; border-bottom: 1px solid #eee; }
-        .highlight-row { background: #e8f0fe; font-weight: bold; }
         
-        @media print {
-            .btn-main, .subject-grid, .header-section, .student-input label, .action-area { display: none; }
-            body { background: white; padding: 0; }
-            .container { box-shadow: none; border: none; width: 100%; max-width: 100%; }
-            #reportOutput { display: block !important; }
-        }
+        .reasoning-box { background: #e3f2fd; padding: 15px; border-radius: 8px; border-left: 5px solid var(--blue); margin-top: 15px; font-size: 0.9em; }
+        .career-tags { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 10px; }
+        .tag { background: #eee; padding: 3px 8px; border-radius: 12px; font-size: 0.8em; color: #333; border: 1px solid #ccc; }
+
+        @media print { .btn-main, .subject-grid, .header-section, label, .action-area { display: none; } }
     </style>
 </head>
 <body>
@@ -52,131 +47,48 @@
 <div class="container">
     <div class="school-header">
         <h1 class="school-name">Bola Olat Private College</h1>
-        <p class="school-motto">Knowledge, Character, and Excellence</p>
+        <p>Student Academic Performance & Career Placement Report</p>
     </div>
 
     <div class="header-section">
-        <div class="student-input">
-            <label>Student Full Name</label>
-            <input type="text" id="sName" placeholder="Enter Name">
-        </div>
-        <div class="student-input">
-            <label>Reg Number</label>
-            <input type="text" id="sID" placeholder="ID No">
-        </div>
-        <div class="student-input">
-            <label>Date</label>
-            <input type="text" id="date" readonly>
-        </div>
+        <div class="student-input"><label>Student Name</label><input type="text" id="sName"></div>
+        <div class="student-input"><label>ID Number</label><input type="text" id="sID"></div>
+        <div class="student-input"><label>Date</label><input type="text" id="curDate" readonly></div>
     </div>
 
-    <div class="subject-grid" id="inputForm">
+    <div class="subject-grid">
         <div class="dept-card">
             <h3>Compulsory</h3>
             <div class="subject-row"><label>English Language</label><input type="number" id="english" value="0"></div>
-            <div class="subject-row"><label>Digital Technology</label><input type="number" id="digital" value="0"></div>
+            <div class="subject-row"><label>Digital Tech</label><input type="number" id="digital" value="0"></div>
             <div class="subject-row"><label>Mathematics</label><input type="number" id="maths" value="0"></div>
-            <div class="subject-row"><label>Citizenship Ed.</label><input type="number" id="citizenship" value="0"></div>
+            <div class="subject-row"><label>Citizenship Ed</label><input type="number" id="citizenship" value="0"></div>
         </div>
-
         <div class="dept-card">
             <h3>Science</h3>
-            <div class="subject-row"><label>Biology</label><input type="number" class="sci" id="biology" value="0"></div>
-            <div class="subject-row"><label>Geography</label><input type="number" class="sci" id="geog" value="0"></div>
-            <div class="subject-row"><label>Chemistry</label><input type="number" class="sci" id="chemistry" value="0"></div>
-            <div class="subject-row"><label>Physics</label><input type="number" class="sci" id="physics" value="0"></div>
-            <div class="subject-row"><label>Further Maths</label><input type="number" class="sci" id="fmaths" value="0"></div>
-            <div class="subject-row"><label>Agric Science</label><input type="number" class="sci" id="agric" value="0"></div>
+            <div class="subject-row"><label>Biology</label><input type="number" class="sci" data-name="Biology" value="0"></div>
+            <div class="subject-row"><label>Geography</label><input type="number" class="sci" data-name="Geography" value="0"></div>
+            <div class="subject-row"><label>Chemistry</label><input type="number" class="sci" data-name="Chemistry" value="0"></div>
+            <div class="subject-row"><label>Physics</label><input type="number" class="sci" data-name="Physics" value="0"></div>
+            <div class="subject-row"><label>Further Maths</label><input type="number" class="sci" data-name="Further Maths" value="0"></div>
+            <div class="subject-row"><label>Agric Science</label><input type="number" class="sci" data-name="Agric Science" value="0"></div>
         </div>
-
         <div class="dept-card">
             <h3>Business</h3>
-            <div class="subject-row"><label>Economics</label><input type="number" class="bus" id="econ" value="0"></div>
-            <div class="subject-row"><label>Accounting</label><input type="number" class="bus" id="accounting" value="0"></div>
-            <div class="subject-row"><label>Commerce</label><input type="number" class="bus" id="commerce" value="0"></div>
+            <div class="subject-row"><label>Economics</label><input type="number" class="bus" data-name="Economics" value="0"></div>
+            <div class="subject-row"><label>Accounting</label><input type="number" class="bus" data-name="Accounting" value="0"></div>
+            <div class="subject-row"><label>Commerce</label><input type="number" class="bus" data-name="Commerce" value="0"></div>
         </div>
-
         <div class="dept-card">
             <h3>Humanities</h3>
-            <div class="subject-row"><label>Literature</label><input type="number" class="hum" id="lit" value="0"></div>
-            <div class="subject-row"><label>Yoruba</label><input type="number" class="hum" id="yoruba" value="0"></div>
-            <div class="subject-row"><label>Government</label><input type="number" class="hum" id="govt" value="0"></div>
-            <div class="subject-row"><label>Religious Studies</label><input type="number" class="hum" id="religion" value="0"></div>
+            <div class="subject-row"><label>Literature</label><input type="number" class="hum" data-name="Literature" value="0"></div>
+            <div class="subject-row"><label>Yoruba</label><input type="number" class="hum" data-name="Yoruba" value="0"></div>
+            <div class="subject-row"><label>Government</label><input type="number" class="hum" data-name="Government" value="0"></div>
+            <div class="subject-row"><label>Religious Studies</label><input type="number" class="hum" data-name="Religious Studies" value="0"></div>
         </div>
     </div>
 
     <div class="action-area" style="text-align: center; margin-top: 20px;">
         <button class="btn-main" onclick="generateAudit()">GENERATE REPORT</button>
-        <button class="btn-main btn-print" onclick="window.print()">PRINT TO PDF</button>
+        <button class="btn-main" style="background:#455a64" onclick="window.print()">PRINT REPORT</button>
     </div>
-
-    <div id="reportOutput">
-        <h3 style="text-align:center; border-bottom: 1px solid #ccc; padding-bottom: 10px;">STUDENT EVALUATION & PLACEMENT AUDIT</h3>
-        <div class="report-grid">
-            <div>
-                <canvas id="radarChart"></canvas>
-                <div id="careerAdvice" style="margin-top:20px; padding:15px; border: 1px solid #ddd; border-radius:8px;"></div>
-            </div>
-            <div>
-                <table class="audit-table">
-                    <thead><tr><th>Subject</th><th>Score</th><th>Status</th></tr></thead>
-                    <tbody id="auditBody"></tbody>
-                </table>
-            </div>
-        </div>
-    </div>
-</div>
-
-<script>
-    document.getElementById('date').value = new Date().toLocaleDateString();
-    let chartObj = null;
-
-    function generateAudit() {
-        const getAvg = (cls) => {
-            const els = document.querySelectorAll('.'+cls);
-            let sum = 0; els.forEach(e => sum += Math.min(100, Math.max(0, parseFloat(e.value) || 0)));
-            return (sum / els.length).toFixed(1);
-        };
-
-        const sci = parseFloat(getAvg('sci'));
-        const bus = parseFloat(getAvg('bus'));
-        const hum = parseFloat(getAvg('hum'));
-
-        // Dual Recommendation Logic
-        const depts = [
-            { name: "SCIENCE", score: sci, req: ["Further Maths", "Physics", "Maths"] },
-            { name: "BUSINESS", score: bus, req: ["Accounting", "Economics", "Maths"] },
-            { name: "HUMANITIES", score: hum, req: ["Literature", "Government", "English"] }
-        ].sort((a,b) => b.score - a.score);
-
-        let advice = `<strong>Primary Placement:</strong> ${depts[0].name} (${depts[0].score}%)`;
-        if((depts[0].score - depts[1].score) <= 10) {
-            advice += `<br><small><strong>Potential Alternative:</strong> ${depts[1].name}</small>`;
-        }
-        advice += `<br><br><small><strong>Prerequisites:</strong> ${depts[0].req.join(", ")}</small>`;
-        
-        document.getElementById('careerAdvice').innerHTML = advice;
-        document.getElementById('reportOutput').style.display = 'block';
-
-        // Table & Chart Logic (Simplified)
-        const body = document.getElementById('auditBody');
-        body.innerHTML = "";
-        document.querySelectorAll('input[type="number"]').forEach(i => {
-            let s = i.value || 0;
-            body.innerHTML += `<tr class="${s >= 70 ? 'highlight-row' : ''}"><td>${i.previousElementSibling.innerText}</td><td>${s}%</td><td>${s>=50?'Pass':'Weak'}</td></tr>`;
-        });
-
-        const ctx = document.getElementById('radarChart').getContext('2d');
-        if(chartObj) chartObj.destroy();
-        chartObj = new Chart(ctx, {
-            type: 'radar',
-            data: {
-                labels: ['Science', 'Business', 'Humanities'],
-                datasets: [{ data: [sci, bus, hum], backgroundColor: 'rgba(26, 115, 232, 0.2)', borderColor: '#1a73e8' }]
-            },
-            options: { scales: { r: { beginAtZero: true, max: 100 } } }
-        });
-    }
-</script>
-</body>
-</html>
