@@ -6,11 +6,10 @@
     <title>BOPC - Academic Placement System</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
-        :root { --blue: #0d47a1; --green: #2e7d32; --red: #b71c1c; --grey: #546e7a; }
+        :root { --blue: #0d47a1; --green: #2e7d32; --red: #b71c1c; --grey: #546e7a; --orange: #ef6c00; }
         body { font-family: 'Segoe UI', Arial, sans-serif; background: #f4f6f9; padding: 20px; color: #333; }
         .container { max-width: 1000px; margin: 0 auto; background: white; padding: 40px; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.1); }
         
-        /* UI Elements */
         .school-header-ui { text-align: center; margin-bottom: 30px; border-bottom: 4px double var(--blue); padding-bottom: 20px; }
         .header-section { display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 15px; margin-bottom: 30px; }
         .student-input { display: flex; flex-direction: column; gap: 5px; }
@@ -24,41 +23,32 @@
         .action-area { text-align: center; margin-top: 30px; padding-top: 20px; border-top: 1px solid #eee; }
         .btn { padding: 12px 25px; border: none; border-radius: 5px; font-weight: bold; cursor: pointer; margin: 5px; }
         .btn-analyze { background: var(--blue); color: white; }
-        .btn-form { background: #ef6c00; color: white; }
+        .btn-form { background: var(--orange); color: white; }
         .btn-print { background: var(--grey); color: white; }
 
-        /* Report & Form Styling */
         #reportOutput, #commitmentForm { display: none; margin-top: 30px; }
         .report-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; }
         .audit-table { width: 100%; border-collapse: collapse; font-size: 12px; }
         .audit-table th, .audit-table td { text-align: left; padding: 8px; border-bottom: 1px solid #eee; }
-        .reasoning-box { background: #e3f2fd; padding: 15px; border-radius: 8px; border-left: 6px solid var(--blue); margin-top: 15px; font-size: 13px; }
+        
+        .reasoning-box { background: #e3f2fd; padding: 15px; border-radius: 8px; border-left: 6px solid var(--blue); margin-top: 15px; font-size: 13px; line-height: 1.5; }
+        .alt-path-alert { margin-top: 10px; color: var(--red); font-weight: bold; font-size: 0.9em; border-top: 1px solid #bbdefb; padding-top: 10px; }
+        
         .career-tags { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 10px; }
         .tag { background: #fff; padding: 3px 8px; border-radius: 12px; font-size: 11px; border: 1px solid var(--blue); color: var(--blue); }
 
-        /* Print-Only Branding */
         .print-header { display: none; text-align: center; border-bottom: 3px double var(--blue); margin-bottom: 20px; padding-bottom: 10px; }
         .print-header h1 { margin: 0; color: var(--blue); font-size: 24px; text-transform: uppercase; }
 
-        /* A4 PRINT ENGINE */
         @media print {
             @page { size: A4; margin: 15mm; }
             body { background: white; padding: 0; }
             .container { box-shadow: none; border: none; width: 100%; max-width: 100%; padding: 0; }
             .action-area, .subject-grid, .header-section, .school-header-ui, .btn { display: none !important; }
-            
             .print-header { display: block !important; }
-            
-            #reportOutput { 
-                display: block !important; 
-                page-break-after: always; /* Forces Form to Page 2 */
-            }
-            #commitmentForm { 
-                display: block !important; 
-                page-break-before: always; 
-                margin-top: 0;
-            }
-            canvas { max-width: 300px !important; margin: 0 auto; }
+            #reportOutput { display: block !important; page-break-after: always; }
+            #commitmentForm { display: block !important; page-break-before: always; margin-top: 0; }
+            canvas { max-width: 280px !important; margin: 0 auto; }
         }
     </style>
 </head>
@@ -67,7 +57,7 @@
 <div class="container">
     <div class="school-header-ui">
         <h1 style="color:var(--blue); margin:0;">Bola Olat Private College</h1>
-        <p>Academic Placement & Career Audit System</p>
+        <p>Student Placement & Career Audit System</p>
     </div>
 
     <div class="header-section">
@@ -77,15 +67,13 @@
     </div>
 
     <div class="subject-grid">
-        <div class="dept-card">
-            <h3>Compulsory</h3>
+        <div class="dept-card"><h3>Compulsory</h3>
             <div class="subject-row"><label>English Language</label><input type="number" id="english" value="0"></div>
             <div class="subject-row"><label>Digital Tech</label><input type="number" id="digital" value="0"></div>
             <div class="subject-row"><label>Mathematics</label><input type="number" id="maths" value="0"></div>
             <div class="subject-row"><label>Citizenship Ed</label><input type="number" id="citizenship" value="0"></div>
         </div>
-        <div class="dept-card">
-            <h3>Science</h3>
+        <div class="dept-card"><h3>Science</h3>
             <div class="subject-row"><label>Biology</label><input type="number" class="sci" data-name="Biology" value="0"></div>
             <div class="subject-row"><label>Geography</label><input type="number" class="sci" data-name="Geography" value="0"></div>
             <div class="subject-row"><label>Chemistry</label><input type="number" class="sci" data-name="Chemistry" value="0"></div>
@@ -93,14 +81,12 @@
             <div class="subject-row"><label>Further Maths</label><input type="number" class="sci" data-name="Further Maths" value="0"></div>
             <div class="subject-row"><label>Agric Science</label><input type="number" class="sci" data-name="Agric Science" value="0"></div>
         </div>
-        <div class="dept-card">
-            <h3>Business</h3>
+        <div class="dept-card"><h3>Business</h3>
             <div class="subject-row"><label>Economics</label><input type="number" class="bus" data-name="Economics" value="0"></div>
             <div class="subject-row"><label>Accounting</label><input type="number" class="bus" data-name="Accounting" value="0"></div>
             <div class="subject-row"><label>Commerce</label><input type="number" class="bus" data-name="Commerce" value="0"></div>
         </div>
-        <div class="dept-card">
-            <h3>Humanities</h3>
+        <div class="dept-card"><h3>Humanities</h3>
             <div class="subject-row"><label>Literature</label><input type="number" class="hum" data-name="Literature" value="0"></div>
             <div class="subject-row"><label>Yoruba</label><input type="number" class="hum" data-name="Yoruba" value="0"></div>
             <div class="subject-row"><label>Government</label><input type="number" class="hum" data-name="Government" value="0"></div>
@@ -110,115 +96,13 @@
 
     <div class="action-area">
         <button class="btn btn-analyze" onclick="generateAudit()">GENERATE REPORT</button>
-        <button class="btn btn-form" id="formBtn" style="display:none;" onclick="toggleForm()">PREPARE OVERRIDE FORM</button>
-        <button class="btn btn-print" onclick="window.print()">PRINT (A4 DUAL PAGE)</button>
+        <button class="btn btn-form" id="formBtn" style="display:none;" onclick="toggleForm()">PREPARE COMMITMENT FORM</button>
+        <button class="btn btn-print" onclick="window.print()">PRINT DUAL-PAGE A4</button>
     </div>
 
     <div id="reportOutput">
-        <div class="print-header">
-            <h1>Bola Olat Private College</h1>
-            <p><strong>Student Placement Evaluation Audit</strong></p>
-        </div>
+        <div class="print-header"><h1>Bola Olat Private College</h1><p>Placement Evaluation Audit</p></div>
         <div class="report-grid">
             <div>
                 <canvas id="radarChart"></canvas>
-                <div id="reasoningArea" class="reasoning-box"></div>
-                <div id="careerArea"></div>
-            </div>
-            <div>
-                <table class="audit-table">
-                    <thead><tr><th>Subject</th><th>Score</th><th>Status</th></tr></thead>
-                    <tbody id="auditBody"></tbody>
-                </table>
-            </div>
-        </div>
-    </div>
-
-    <div id="commitmentForm">
-        <div class="print-header">
-            <h1>Bola Olat Private College</h1>
-            <p><strong>Academic Commitment Form (Override Agreement)</strong></p>
-        </div>
-        <div style="border: 2px solid #333; padding: 30px; margin-top: 10px; line-height: 2;">
-            <p>This is to certify that the student <b><span id="fName" style="border-bottom:1px solid #333; min-width:200px; display:inline-block;"></span></b> 
-            has been recommended for the <b><span id="fRec" style="font-weight:bold;"></span></b> Department based on academic audit data.</p>
-            
-            <p>The Parent/Guardian has chosen to override this recommendation for entry into the: ________________________ Department.</p>
-            
-            <p><strong>AGREEMENT TERMS:</strong><br>
-            1. The student is on strict academic probation for the first term.<br>
-            2. A minimum average of 60% is required in core subjects to remain in this department.<br>
-            3. The school reserves the right to re-assign the student if performance fails to improve.</p>
-
-            <div style="margin-top:50px; display:grid; grid-template-columns: 1fr 1fr; gap:40px; text-align:center;">
-                <div style="border-top:1px solid #333;">Parent/Guardian Signature</div>
-                <div style="border-top:1px solid #333;">Principal/Counselor Signature</div>
-            </div>
-        </div>
-    </div>
-</div>
-
-<script>
-    document.getElementById('curDate').value = new Date().toLocaleDateString();
-    let chartObj = null;
-
-    const careersMap = {
-        "SCIENCE": ["Doctor", "Engineer", "Pharmacist", "Software Dev", "Architect"],
-        "BUSINESS": ["Accountant", "Banker", "Economist", "Marketing", "Manager"],
-        "HUMANITIES": ["Lawyer", "Journalist", "Diplomat", "Public Admin", "Linguist"]
-    };
-
-    function generateAudit() {
-        const getDeptData = (cls) => {
-            let sum = 0, items = [];
-            document.querySelectorAll('.'+cls).forEach(i => {
-                let v = parseFloat(i.value) || 0; sum += v;
-                items.push({ n: i.dataset.name, s: v });
-            });
-            items.sort((a,b) => b.s - a.s);
-            return { avg: (sum / items.length).toFixed(1), top: items };
-        };
-
-        const sci = getDeptData('sci');
-        const bus = getDeptData('bus');
-        const hum = getDeptData('hum');
-        const depts = [{id:"SCIENCE", a:sci.avg, t:sci.top}, {id:"BUSINESS", a:bus.avg, t:bus.top}, {id:"HUMANITIES", a:hum.avg, t:hum.top}].sort((a,b)=>b.a-a.a);
-
-        document.getElementById('reportOutput').style.display = 'block';
-        document.getElementById('formBtn').style.display = 'inline-block';
-        
-        // Populate Data
-        document.getElementById('reasoningArea').innerHTML = `<strong>Placement Reason:</strong> Based on an average of ${depts[0].a}%, with strengths in ${depts[0].t[0].n} and ${depts[0].t[1].n}.`;
-        document.getElementById('fName').innerText = document.getElementById('sName').value || "____________________";
-        document.getElementById('fRec').innerText = depts[0].id;
-
-        let careerHTML = `<strong>Recommended Careers:</strong><br><div class="career-tags">`;
-        careersMap[depts[0].id].forEach(c => careerHTML += `<span class="tag">${c}</span>`);
-        document.getElementById('careerArea').innerHTML = careerHTML + `</div>`;
-
-        const body = document.getElementById('auditBody');
-        body.innerHTML = "";
-        document.querySelectorAll('input[type="number"]').forEach(i => {
-            let v = i.value || 0;
-            body.innerHTML += `<tr><td>${i.previousElementSibling.innerText}</td><td>${v}%</td><td>${v>=70?'Excellent':(v>=50?'Pass':'Weak')}</td></tr>`;
-        });
-
-        const ctx = document.getElementById('radarChart').getContext('2d');
-        if(chartObj) chartObj.destroy();
-        chartObj = new Chart(ctx, {
-            type: 'radar',
-            data: {
-                labels: ['Science', 'Business', 'Humanities'],
-                datasets: [{ data: [sci.avg, bus.avg, hum.avg], backgroundColor: 'rgba(13, 71, 161, 0.2)', borderColor: '#0d47a1', borderWidth: 2 }]
-            },
-            options: { scales: { r: { beginAtZero: true, max: 100 } }, plugins: { legend: { display: false } } }
-        });
-    }
-
-    function toggleForm() {
-        const f = document.getElementById('commitmentForm');
-        f.style.display = (f.style.display === 'block') ? 'none' : 'block';
-    }
-</script>
-</body>
-</html>
+                <div id="reason
