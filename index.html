@@ -171,9 +171,12 @@
         let reasonBox = document.getElementById('reasoningArea');
         let careerBox = document.getElementById('careerArea');
 
-        if (scores[0].avg < 40) {
+        // UPDATED: CRITICAL ALERT NOW TRIGGERS BELOW 50%
+        if (scores[0].avg < 50) {
             reasonBox.className = "critical-alert";
-            reasonBox.innerHTML = `<strong>⚠️ CRITICAL ACADEMIC ALERT:</strong><br>Performance is below 40% in all departments. A Remedial Foundational plan is required.`;
+            reasonBox.innerHTML = `<strong>⚠️ CRITICAL ACADEMIC ALERT:</strong><br>
+            Performance is below the 50% minimum standard in all departments. 
+            <strong>Recommendation:</strong> Foundational Remedial Plan is mandatory before departmental placement.`;
             careerBox.style.display = 'none';
         } else {
             reasonBox.className = "reasoning-box";
@@ -193,7 +196,16 @@
         document.querySelectorAll('input[type="number"]').forEach(i => {
             let s = parseFloat(i.value) || 0;
             let label = i.previousElementSibling ? i.previousElementSibling.innerText : i.id;
-            body.innerHTML += `<tr style="${s < 40 ? 'color:red; font-weight:bold;' : ''}"><td>${label}</td><td>${s}%</td><td>${s>=70?'Excellent':(s>=50?'Pass':'Weak')}</td></tr>`;
+            
+            // UPDATED: REMARK LOGIC FOR 50% MINIMUM
+            let remark = "Weak";
+            if (s >= 75) remark = "Excellent";
+            else if (s >= 50) remark = "Pass";
+
+            // Visual highlight for scores under 50
+            let color = s < 50 ? 'color:red; font-weight:bold;' : '';
+            
+            body.innerHTML += `<tr style="${color}"><td>${label}</td><td>${s}%</td><td>${remark}</td></tr>`;
         });
 
         const ctx = document.getElementById('radarChart').getContext('2d');
@@ -207,11 +219,5 @@
             options: { scales: { r: { beginAtZero: true, max: 100 } }, plugins: { legend: { display: false } } }
         });
     }
-
-    function toggleForm() {
-        const form = document.getElementById('commitmentForm');
-        form.style.display = (form.style.display === 'block') ? 'none' : 'block';
-    }
+    // ... rest of the toggleForm function
 </script>
-</body>
-</html>
