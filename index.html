@@ -1,1 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Path Finder Pro</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root { --sci: #1a73e8; --bus: #34a853; --hum: #fbbc04; }
+        body { font-family: 'Segoe UI', system-ui, sans-serif; background: #f8f9fa; margin: 0; padding: 20px; color: #333; }
+        .container { max-width: 1100px; margin: 0 auto; background: white; padding: 25px; border-radius: 15px; box-shadow: 0 5px 25px rgba(0,0,0,0.1); }
+        h1 { text-align: center; color: #1a73e8; margin-bottom: 30px; border-bottom: 2px solid #eee; padding-bottom: 15px; }
+        
+        /* Three Column Layout for 17 Subjects */
+        .subject-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+        @media (max-width: 900px) { .subject-grid { grid-template-columns: 1fr; } }
+        
+        .dept-card { padding: 15px; border-radius: 10px; border: 1px solid #eee; background: #fff; }
+        .dept-card.sci { border-top: 5px solid var(--sci); }
+        .dept-card.bus { border-top: 5px solid var(--bus); }
+        .dept-card.hum { border-top: 5px solid var(--hum); }
+        
+        .input-group { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; font-size: 14px; }
+        input { width: 50px; padding: 5px; border: 1px solid #ccc; border-radius: 4px; text-align: center; }
+        
+        .teacher-section { grid-column: 1 / -1; margin-top: 20px; }
+        textarea { width: 100%; height: 60px; padding: 10px; border-radius: 6px; border: 1px solid #ccc; resize: none; box-sizing: border-box; }
+        
+        .action-btns { grid-column: 1 / -1; display: flex; gap: 15px; margin-top: 20px; }
+        button { flex: 1; padding: 15px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; transition: 0.3s; font-size: 16px; }
+        .btn-analyze { background: var(--sci); color: white; }
+        .btn-download { background: var(--bus); color: white; display: none; }
+        
+        .result-section { grid-column: 1 / -1; display: grid; grid-template-columns: 1fr 1fr; gap: 30px; margin-top: 30px; padding-top: 30px; border-top: 2px dashed #eee; display: none; }
+        #chart-wrapper { background: #fafafa; padding: 15px; border-radius: 10px; }
+        .recommendation-box { padding: 20px; background: #fff; border-radius: 10px; border: 1px solid #ddd; }
+        .remarks-output { font-style: italic; background: #fffde7; padding: 10px; border-left: 4px solid #f1c40f; margin-top: 15px; }
+    </style>
+</head>
+<body>
 
+<div class="container">
+    <h1>Student Academic Profiler</h1>
+    
+    <div class="subject-grid">
+        <div class="dept-card sci">
+            <h3>Science (6)</h3>
+            <div class="input-group">Physics <input type="number" class="sci-in" id="physics" value="0"></div>
+            <div class="input-group">Chemistry <input type="number" class="sci-in" id="chemistry" value="0"></div>
+            <div class="input-group">Biology <input type="number" class="sci-in" id="biology" value="0"></div>
+            <div class="input-group">Further Math <input type="number" class="sci-in" id="fmath" value="0"></div>
+            <div class="input-group">Agric Science <input type="number" class="sci-in" id="agric" value="0"></div>
+            <div class="input-group">Geography <input type="number" class="sci-in" id="geog" value="0"></div>
+        </div>
+
+        <div class="dept-card bus">
+            <h3>Business (5)</h3>
+            <div class="input-group">Accounting <input type="number" class="bus-in" id="accounting" value="0"></div>
+            <div class="input-group">Commerce <input type="number" class="bus-in" id="commerce" value="0"></div>
+            <div class="input-group">Economics <input type="number" class="bus-in" id="economics" value="0"></div>
+            <div class="input-group">Marketing <input type="number" class="bus-in" id="marketing" value="0"></div>
+            <div class="input-group">Insurance <input type="number" class="bus-in" id="insurance" value="0"></div>
+        </div>
+
+        <div class="dept-card hum">
+            <h3>Humanities (6)</h3>
+            <div class="input-group">Literature <input type="number" class="hum-in" id="lit" value="0"></div>
+            <div class="input-group">Government <input type="number" class="hum-in" id="govt" value="0"></div>
+            <div class="input-group">History <input type="number" class="hum-in" id="hist" value="0"></div>
+            <div class="input-group">Religion (CRS/IRS) <input type="number" class="hum-in" id="rel" value="0"></div>
+            <div class="input-group">Fine Art <input type="number" class="hum-in" id="art" value="0"></div>
+            <div class="input-group">Music <input type="number" class="hum-in" id="music" value="0"></div>
+        </div>
+
+        <div class="teacher-section">
+            <p><strong>Teacher's Observations</strong></p>
+            <textarea id="teacherNotes" placeholder="Describe the student's aptitude beyond exam scores..."></textarea>
+        </div>
+
+        <div class="action-btns">
+            <button class="btn-analyze" onclick="processResults()">Generate Career Report</button>
+            <button class="btn-download" id="dlBtn" onclick="downloadPDF()">Save Report (PNG)</button>
+        </div>
+    </div>
+
+    <div class="result-section" id="resArea">
+        <div id="chart-wrapper">
+            <canvas id="aptitudeChart"></canvas>
+        </div>
+        <div class="recommendation-box">
+            <h3>Assessment Result</h3>
+            <p id="topDept"></p>
+            <p><strong>Career Suggestions:</strong></p>
+            <ul id="careers"></ul>
+            <div id="remarksDisplay" class="remarks-output"></div>
+        </div>
+    </div>
+</div>
+
+<script>
+    let chartInstance = null;
+    const careers = {
+        physics: ["Engineer", "Pilot"], chemistry: ["Doctor", "Pharmacist"], biology: ["Nurse", "Lab Scientist"],
+        fmath: ["Software Developer", "Data Scientist"], agric: ["Food Technologist", "Farmer"], geog: ["Urban Planner", "Geologist"],
+        accounting: ["Auditor", "Banker"], commerce: ["Manager", "Entrepreneur"], economics: ["Stockbroker", "Economist"],
+        marketing: ["Advertiser", "Brand Manager"], insurance: ["Actuary", "Risk Manager"],
+        lit: ["Author", "Journalist"], govt: ["Lawyer", "Diplomat"], hist: ["Curator", "Researcher"],
+        rel: ["Counselor", "Theologian"], art: ["Graphic Designer", "Architect"], music: ["Producer", "Composer"]
+    };
+
+    function processResults() {
+        const getAvg = (className) => {
+            const inputs = document.querySelectorAll('.'+className);
+            let sum = 0;
+            inputs.forEach(i => sum += Math.min(100, Math.max(0, parseFloat(i.value) || 0)));
+            return sum / inputs.length;
+        };
+
+        const sciAvg = getAvg('sci-in');
+        const busAvg = getAvg('bus-in');
+        const humAvg = getAvg('hum-in');
+
+        // Show Result Area
+        document.getElementById('resArea').style.display = 'grid';
+        document.getElementById('dlBtn').style.display = 'block';
+
+        // Recommendation
+        const scores = { Science: sciAvg, Business: busAvg, Humanities: humAvg };
+        const best = Object.keys(scores).reduce((a, b) => scores[a] > scores[b] ? a : b);
+        document.getElementById('topDept').innerHTML = `The student shows the strongest aptitude for the <b>${best} Department</b>.`;
+
+        // Careers based on single highest subject
+        const allInputs = document.querySelectorAll('input');
+        let topSubId = "physics";
+        let maxVal = -1;
+        allInputs.forEach(i => {
+            if(parseFloat(i.value) > maxVal) { maxVal = parseFloat(i.value); topSubId = i.id; }
+        });
+        
+        const careerList = document.getElementById('careers');
+        careerList.innerHTML = "";
+        careers[topSubId].forEach(c => careerList.innerHTML += `<li>${c}</li>`);
+
+        // Remarks
+        document.getElementById('remarksDisplay').innerText = document.getElementById('teacherNotes').value;
+
+        // Chart
+        const ctx = document.getElementById('aptitudeChart').getContext('2d');
+        if(chartInstance) chartInstance.destroy();
+        chartInstance = new Chart(ctx, {
+            type: 'radar',
+            data: {
+                labels: ['Science', 'Business', 'Humanities'],
+                datasets: [{
+                    label: 'Departmental Strength %',
+                    data: [sciAvg, busAvg, humAvg],
+                    backgroundColor: 'rgba(26, 115, 232, 0.2)',
+                    borderColor: '#1a73e8',
+                    borderWidth: 3
+                }]
+            },
+            options: { scales: { r: { beginAtZero: true, max: 100 } } }
+        });
+    }
+
+    function downloadPDF() {
+        const canvas = document.getElementById('aptitudeChart');
+        const link = document.createElement('a');
+        link.download = 'Student-Assessment.png';
+        link.href = canvas.toDataURL();
+        link.click();
+    }
+</script>
+</body>
+</html>
