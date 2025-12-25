@@ -3,172 +3,175 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Student Path Finder Pro</title>
+    <title>Academic Placement & Career Audit Tool</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
-        :root { --sci: #1a73e8; --bus: #34a853; --hum: #fbbc04; }
-        body { font-family: 'Segoe UI', system-ui, sans-serif; background: #f8f9fa; margin: 0; padding: 20px; color: #333; }
-        .container { max-width: 1100px; margin: 0 auto; background: white; padding: 25px; border-radius: 15px; box-shadow: 0 5px 25px rgba(0,0,0,0.1); }
-        h1 { text-align: center; color: #1a73e8; margin-bottom: 30px; border-bottom: 2px solid #eee; padding-bottom: 15px; }
+        :root { --blue: #1a73e8; --green: #34a853; --orange: #fbbc04; --grey: #5f6368; }
+        body { font-family: 'Segoe UI', sans-serif; background: #f4f6f9; padding: 20px; }
+        .container { max-width: 1000px; margin: 0 auto; background: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.08); }
         
-        /* Three Column Layout for 17 Subjects */
-        .subject-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
-        @media (max-width: 900px) { .subject-grid { grid-template-columns: 1fr; } }
+        .header-section { display: grid; grid-template-columns: 2fr 1fr; gap: 20px; margin-bottom: 30px; padding-bottom: 20px; border-bottom: 2px solid #eee; }
+        .student-input { display: flex; flex-direction: column; gap: 5px; }
+        .student-input input { padding: 10px; border: 1px solid #ccc; border-radius: 5px; }
+
+        .subject-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 25px; }
+        @media (max-width: 768px) { .subject-grid { grid-template-columns: 1fr; } }
+
+        .dept-card { background: #fff; border: 1px solid #e0e0e0; border-radius: 8px; padding: 15px; }
+        .dept-card h3 { margin-top: 0; color: var(--blue); font-size: 1.1em; border-bottom: 1px solid #eee; padding-bottom: 10px; }
         
-        .dept-card { padding: 15px; border-radius: 10px; border: 1px solid #eee; background: #fff; }
-        .dept-card.sci { border-top: 5px solid var(--sci); }
-        .dept-card.bus { border-top: 5px solid var(--bus); }
-        .dept-card.hum { border-top: 5px solid var(--hum); }
+        .subject-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+        .subject-row label { font-size: 0.9em; color: #444; }
+        .subject-row input { width: 50px; padding: 5px; text-align: center; border: 1px solid #ccc; border-radius: 4px; }
+
+        .action-area { text-align: center; margin-top: 30px; }
+        .btn-main { background: var(--blue); color: white; padding: 15px 40px; border: none; border-radius: 30px; font-size: 1.1em; font-weight: bold; cursor: pointer; }
         
-        .input-group { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; font-size: 14px; }
-        input { width: 50px; padding: 5px; border: 1px solid #ccc; border-radius: 4px; text-align: center; }
+        #reportOutput { display: none; margin-top: 40px; border-top: 3px solid var(--blue); padding-top: 30px; }
+        .report-grid { display: grid; grid-template-columns: 1.2fr 1fr; gap: 30px; }
+        .audit-table { width: 100%; border-collapse: collapse; font-size: 0.85em; }
+        .audit-table th, .audit-table td { text-align: left; padding: 8px; border-bottom: 1px solid #eee; }
+        .highlight-row { background: #e8f0fe; font-weight: bold; }
         
-        .teacher-section { grid-column: 1 / -1; margin-top: 20px; }
-        textarea { width: 100%; height: 60px; padding: 10px; border-radius: 6px; border: 1px solid #ccc; resize: none; box-sizing: border-box; }
-        
-        .action-btns { grid-column: 1 / -1; display: flex; gap: 15px; margin-top: 20px; }
-        button { flex: 1; padding: 15px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; transition: 0.3s; font-size: 16px; }
-        .btn-analyze { background: var(--sci); color: white; }
-        .btn-download { background: var(--bus); color: white; display: none; }
-        
-        .result-section { grid-column: 1 / -1; display: grid; grid-template-columns: 1fr 1fr; gap: 30px; margin-top: 30px; padding-top: 30px; border-top: 2px dashed #eee; display: none; }
-        #chart-wrapper { background: #fafafa; padding: 15px; border-radius: 10px; }
-        .recommendation-box { padding: 20px; background: #fff; border-radius: 10px; border: 1px solid #ddd; }
-        .remarks-output { font-style: italic; background: #fffde7; padding: 10px; border-left: 4px solid #f1c40f; margin-top: 15px; }
+        .remarks-box { background: #fffde7; border-left: 5px solid #f1c40f; padding: 15px; margin-top: 15px; font-style: italic; }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <h1>Student Academic Profiler</h1>
-    
-    <div class="subject-grid">
-        <div class="dept-card sci">
-            <h3>Science (6)</h3>
-            <div class="input-group">Physics <input type="number" class="sci-in" id="physics" value="0"></div>
-            <div class="input-group">Chemistry <input type="number" class="sci-in" id="chemistry" value="0"></div>
-            <div class="input-group">Biology <input type="number" class="sci-in" id="biology" value="0"></div>
-            <div class="input-group">Further Math <input type="number" class="sci-in" id="fmath" value="0"></div>
-            <div class="input-group">Agric Science <input type="number" class="sci-in" id="agric" value="0"></div>
-            <div class="input-group">Geography <input type="number" class="sci-in" id="geog" value="0"></div>
+    <div class="header-section">
+        <div class="student-input">
+            <label>Student Full Name</label>
+            <input type="text" id="sName" placeholder="Full Name">
         </div>
-
-        <div class="dept-card bus">
-            <h3>Business (5)</h3>
-            <div class="input-group">Accounting <input type="number" class="bus-in" id="accounting" value="0"></div>
-            <div class="input-group">Commerce <input type="number" class="bus-in" id="commerce" value="0"></div>
-            <div class="input-group">Economics <input type="number" class="bus-in" id="economics" value="0"></div>
-            <div class="input-group">Marketing <input type="number" class="bus-in" id="marketing" value="0"></div>
-            <div class="input-group">Insurance <input type="number" class="bus-in" id="insurance" value="0"></div>
-        </div>
-
-        <div class="dept-card hum">
-            <h3>Humanities (6)</h3>
-            <div class="input-group">Literature <input type="number" class="hum-in" id="lit" value="0"></div>
-            <div class="input-group">Government <input type="number" class="hum-in" id="govt" value="0"></div>
-            <div class="input-group">History <input type="number" class="hum-in" id="hist" value="0"></div>
-            <div class="input-group">Religion (CRS/IRS) <input type="number" class="hum-in" id="rel" value="0"></div>
-            <div class="input-group">Fine Art <input type="number" class="hum-in" id="art" value="0"></div>
-            <div class="input-group">Music <input type="number" class="hum-in" id="music" value="0"></div>
-        </div>
-
-        <div class="teacher-section">
-            <p><strong>Teacher's Observations</strong></p>
-            <textarea id="teacherNotes" placeholder="Describe the student's aptitude beyond exam scores..."></textarea>
-        </div>
-
-        <div class="action-btns">
-            <button class="btn-analyze" onclick="processResults()">Generate Career Report</button>
-            <button class="btn-download" id="dlBtn" onclick="downloadPDF()">Save Report (PNG)</button>
+        <div class="student-input">
+            <label>Admission/ID Number</label>
+            <input type="text" id="sID" placeholder="ID Number">
         </div>
     </div>
 
-    <div class="result-section" id="resArea">
-        <div id="chart-wrapper">
-            <canvas id="aptitudeChart"></canvas>
+    <div class="subject-grid">
+        <div class="dept-card" style="border-top: 4px solid var(--grey);">
+            <h3>1. Compulsory Subjects</h3>
+            <div class="subject-row"><label>English Language</label><input type="number" id="english" value="0"></div>
+            <div class="subject-row"><label>Digital Technology</label><input type="number" id="digital" value="0"></div>
+            <div class="subject-row"><label>Mathematics</label><input type="number" id="maths" value="0"></div>
+            <div class="subject-row"><label>Citizenship Education</label><input type="number" id="citizenship" value="0"></div>
         </div>
-        <div class="recommendation-box">
-            <h3>Assessment Result</h3>
-            <p id="topDept"></p>
-            <p><strong>Career Suggestions:</strong></p>
-            <ul id="careers"></ul>
-            <div id="remarksDisplay" class="remarks-output"></div>
+
+        <div class="dept-card" style="border-top: 4px solid var(--blue);">
+            <h3>2. Science Subjects</h3>
+            <div class="subject-row"><label>Biology</label><input type="number" class="sci" id="biology" value="0"></div>
+            <div class="subject-row"><label>Geography</label><input type="number" class="sci" id="geog" value="0"></div>
+            <div class="subject-row"><label>Chemistry</label><input type="number" class="sci" id="chemistry" value="0"></div>
+            <div class="subject-row"><label>Physics</label><input type="number" class="sci" id="physics" value="0"></div>
+            <div class="subject-row"><label>Further Maths</label><input type="number" class="sci" id="fmaths" value="0"></div>
+            <div class="subject-row"><label>Agriculture Science</label><input type="number" class="sci" id="agric" value="0"></div>
+        </div>
+
+        <div class="dept-card" style="border-top: 4px solid var(--green);">
+            <h3>3. Business Subjects</h3>
+            <div class="subject-row"><label>Economics</label><input type="number" class="bus" id="econ" value="0"></div>
+            <div class="subject-row"><label>Financial Accounting</label><input type="number" class="bus" id="accounting" value="0"></div>
+            <div class="subject-row"><label>Commerce</label><input type="number" class="bus" id="commerce" value="0"></div>
+        </div>
+
+        <div class="dept-card" style="border-top: 4px solid var(--orange);">
+            <h3>4. Humanities Subjects</h3>
+            <div class="subject-row"><label>Literature In English</label><input type="number" class="hum" id="lit" value="0"></div>
+            <div class="subject-row"><label>Yoruba</label><input type="number" class="hum" id="yoruba" value="0"></div>
+            <div class="subject-row"><label>Government</label><input type="number" class="hum" id="govt" value="0"></div>
+            <div class="subject-row"><label>Religious Studies</label><input type="number" class="hum" id="religion" value="0"></div>
+        </div>
+    </div>
+
+    <div class="student-input" style="margin-top:20px;">
+        <label>Teacher/Counselor Remarks</label>
+        <textarea id="remarks" style="height:60px; padding:10px; border-radius:5px; border:1px solid #ccc;"></textarea>
+    </div>
+
+    <div class="action-area">
+        <button class="btn-main" onclick="generateAudit()">GENERATE FINAL AUDIT</button>
+    </div>
+
+    <div id="reportOutput">
+        <h2 style="text-align:center;">OFFICIAL PLACEMENT REPORT</h2>
+        <div class="report-grid">
+            <div>
+                <h3>Performance Radar</h3>
+                <canvas id="radarChart"></canvas>
+                <div class="remarks-box" id="dispRemarks"></div>
+            </div>
+            <div>
+                <h3>Subject Audit Trace</h3>
+                <table class="audit-table" id="auditTable">
+                    <thead><tr><th>Subject</th><th>Score</th><th>Status</th></tr></thead>
+                    <tbody id="auditBody"></tbody>
+                </table>
+                <div id="careerAdvice" style="margin-top:20px; padding:15px; background:#e8f5e9; border-radius:8px;"></div>
+            </div>
         </div>
     </div>
 </div>
 
 <script>
-    let chartInstance = null;
+    let chartObj = null;
     const careers = {
-        physics: ["Engineer", "Pilot"], chemistry: ["Doctor", "Pharmacist"], biology: ["Nurse", "Lab Scientist"],
-        fmath: ["Software Developer", "Data Scientist"], agric: ["Food Technologist", "Farmer"], geog: ["Urban Planner", "Geologist"],
-        accounting: ["Auditor", "Banker"], commerce: ["Manager", "Entrepreneur"], economics: ["Stockbroker", "Economist"],
-        marketing: ["Advertiser", "Brand Manager"], insurance: ["Actuary", "Risk Manager"],
-        lit: ["Author", "Journalist"], govt: ["Lawyer", "Diplomat"], hist: ["Curator", "Researcher"],
-        rel: ["Counselor", "Theologian"], art: ["Graphic Designer", "Architect"], music: ["Producer", "Composer"]
+        physics: ["Engineering", "Aviation"], fmaths: ["Software Dev", "Actuary"], chemistry: ["Pharmacy", "Medicine"],
+        biology: ["Nursing", "Agric Research"], geog: ["Urban Planning", "GIS"], agric: ["Agribusiness", "Food Tech"],
+        accounting: ["Accounting", "Audit"], econ: ["Banking", "Economics"], commerce: ["Business Mgt", "Trade"],
+        lit: ["Journalism", "Law"], govt: ["Politics", "Legal Studies"], yoruba: ["Arts/Culture", "Linguistics"],
+        religion: ["Counseling", "Social Work"], citizenship: ["Security", "Civil Service"], 
+        digital: ["IT Support", "Digital Design"], maths: ["Finance", "Engineering"]
     };
 
-    function processResults() {
-        const getAvg = (className) => {
-            const inputs = document.querySelectorAll('.'+className);
-            let sum = 0;
-            inputs.forEach(i => sum += Math.min(100, Math.max(0, parseFloat(i.value) || 0)));
-            return sum / inputs.length;
+    function generateAudit() {
+        const getVal = (id) => Math.min(100, Math.max(0, parseFloat(document.getElementById(id).value) || 0));
+        const inputs = document.querySelectorAll('input[type="number"]');
+        
+        // Calculate Dept Averages
+        const getAvg = (cls) => {
+            const els = document.querySelectorAll('.'+cls);
+            let sum = 0; els.forEach(e => sum += Math.min(100, Math.max(0, parseFloat(e.value) || 0)));
+            return (sum / els.length).toFixed(1);
         };
 
-        const sciAvg = getAvg('sci-in');
-        const busAvg = getAvg('bus-in');
-        const humAvg = getAvg('hum-in');
+        const sciAvg = getAvg('sci');
+        const busAvg = getAvg('bus');
+        const humAvg = getAvg('hum');
 
-        // Show Result Area
-        document.getElementById('resArea').style.display = 'grid';
-        document.getElementById('dlBtn').style.display = 'block';
+        // Render Audit Table
+        const body = document.getElementById('auditBody');
+        body.innerHTML = "";
+        let maxVal = -1; let topSub = "";
 
-        // Recommendation
-        const scores = { Science: sciAvg, Business: busAvg, Humanities: humAvg };
-        const best = Object.keys(scores).reduce((a, b) => scores[a] > scores[b] ? a : b);
-        document.getElementById('topDept').innerHTML = `The student shows the strongest aptitude for the <b>${best} Department</b>.`;
-
-        // Careers based on single highest subject
-        const allInputs = document.querySelectorAll('input');
-        let topSubId = "physics";
-        let maxVal = -1;
-        allInputs.forEach(i => {
-            if(parseFloat(i.value) > maxVal) { maxVal = parseFloat(i.value); topSubId = i.id; }
+        inputs.forEach(i => {
+            let score = parseFloat(i.value) || 0;
+            let status = score >= 70 ? "Excellent" : (score >= 50 ? "Pass" : "Weak");
+            let row = `<tr class="${score >= 70 ? 'highlight-row' : ''}"><td>${i.previousElementSibling.innerText}</td><td>${score}%</td><td>${status}</td></tr>`;
+            body.innerHTML += row;
+            if(score > maxVal) { maxVal = score; topSub = i.id; }
         });
-        
-        const careerList = document.getElementById('careers');
-        careerList.innerHTML = "";
-        careers[topSubId].forEach(c => careerList.innerHTML += `<li>${c}</li>`);
 
-        // Remarks
-        document.getElementById('remarksDisplay').innerText = document.getElementById('teacherNotes').value;
+        // Recommendation Logic
+        const recommended = sciAvg > busAvg && sciAvg > humAvg ? "SCIENCE" : (busAvg > humAvg ? "BUSINESS" : "HUMANITIES");
+        document.getElementById('careerAdvice').innerHTML = `<b>Placement:</b> ${recommended} DEPT<br><b>Focus Area:</b> ${careers[topSub][0]}`;
 
-        // Chart
-        const ctx = document.getElementById('aptitudeChart').getContext('2d');
-        if(chartInstance) chartInstance.destroy();
-        chartInstance = new Chart(ctx, {
+        // UI Updates
+        document.getElementById('reportOutput').style.display = 'block';
+        document.getElementById('dispRemarks').innerText = document.getElementById('remarks').value;
+
+        // Radar Chart
+        const ctx = document.getElementById('radarChart').getContext('2d');
+        if(chartObj) chartObj.destroy();
+        chartObj = new Chart(ctx, {
             type: 'radar',
             data: {
                 labels: ['Science', 'Business', 'Humanities'],
-                datasets: [{
-                    label: 'Departmental Strength %',
-                    data: [sciAvg, busAvg, humAvg],
-                    backgroundColor: 'rgba(26, 115, 232, 0.2)',
-                    borderColor: '#1a73e8',
-                    borderWidth: 3
-                }]
+                datasets: [{ data: [sciAvg, busAvg, humAvg], backgroundColor: 'rgba(26, 115, 232, 0.2)', borderColor: '#1a73e8' }]
             },
-            options: { scales: { r: { beginAtZero: true, max: 100 } } }
+            options: { plugins: { legend: { display: false } }, scales: { r: { suggestMin: 0, suggestMax: 100 } } }
         });
-    }
-
-    function downloadPDF() {
-        const canvas = document.getElementById('aptitudeChart');
-        const link = document.createElement('a');
-        link.download = 'Student-Assessment.png';
-        link.href = canvas.toDataURL();
-        link.click();
     }
 </script>
 </body>
