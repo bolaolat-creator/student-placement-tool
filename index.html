@@ -3,17 +3,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BOPC - Academic Placement System</title>
+    <title>BOPC - Academic Placement & Intervention System</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
-        :root { --blue: #0d47a1; --green: #2e7d32; --red: #b71c1c; --grey: #546e7a; --orange: #ef6c00; }
+        :root { --blue: #0d47a1; --green: #2e7d32; --red: #b71c1c; --grey: #546e7a; --orange: #ef6c00; --warn: #fff3e0; }
         body { font-family: 'Segoe UI', Arial, sans-serif; background: #f4f6f9; padding: 20px; color: #333; }
         .container { max-width: 1000px; margin: 0 auto; background: white; padding: 40px; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.1); }
         
         .school-header-ui { text-align: center; margin-bottom: 30px; border-bottom: 4px double var(--blue); padding-bottom: 20px; }
         .header-section { display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 15px; margin-bottom: 30px; }
-        .student-input { display: flex; flex-direction: column; gap: 5px; }
-        .student-input input { padding: 10px; border: 1px solid #ccc; border-radius: 5px; }
+        .student-input input { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 5px; box-sizing: border-box; }
+        
         .subject-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; }
         .dept-card { background: #fff; border: 1px solid #e0e0e0; border-radius: 8px; padding: 15px; }
         .dept-card h3 { margin: 0 0 10px 0; color: var(--blue); font-size: 1em; border-bottom: 1px solid #eee; padding-bottom: 5px; }
@@ -24,31 +24,21 @@
         .btn { padding: 12px 25px; border: none; border-radius: 5px; font-weight: bold; cursor: pointer; margin: 5px; }
         .btn-analyze { background: var(--blue); color: white; }
         .btn-form { background: var(--orange); color: white; }
-        .btn-print { background: var(--grey); color: white; }
 
         #reportOutput, #commitmentForm { display: none; margin-top: 30px; }
         .report-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; }
         .audit-table { width: 100%; border-collapse: collapse; font-size: 12px; }
         .audit-table th, .audit-table td { text-align: left; padding: 8px; border-bottom: 1px solid #eee; }
         
-        .reasoning-box { background: #e3f2fd; padding: 15px; border-radius: 8px; border-left: 6px solid var(--blue); margin-top: 15px; font-size: 13px; line-height: 1.5; }
-        .alt-path-alert { margin-top: 10px; color: var(--red); font-weight: bold; font-size: 0.9em; border-top: 1px solid #bbdefb; padding-top: 10px; }
+        /* Alert Boxes */
+        .reasoning-box { background: #e3f2fd; padding: 15px; border-radius: 8px; border-left: 6px solid var(--blue); margin-top: 15px; font-size: 13px; }
+        .critical-alert { background: #ffebee !important; border-left: 6px solid var(--red) !important; color: var(--red); padding: 15px; border-radius: 8px; margin-top: 15px; font-weight: bold; }
         
-        .career-tags { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 10px; }
-        .tag { background: #fff; padding: 3px 8px; border-radius: 12px; font-size: 11px; border: 1px solid var(--blue); color: var(--blue); }
-
-        .print-header { display: none; text-align: center; border-bottom: 3px double var(--blue); margin-bottom: 20px; padding-bottom: 10px; }
-        .print-header h1 { margin: 0; color: var(--blue); font-size: 24px; text-transform: uppercase; }
-
         @media print {
             @page { size: A4; margin: 15mm; }
-            body { background: white; padding: 0; }
-            .container { box-shadow: none; border: none; width: 100%; max-width: 100%; padding: 0; }
             .action-area, .subject-grid, .header-section, .school-header-ui, .btn { display: none !important; }
-            .print-header { display: block !important; }
             #reportOutput { display: block !important; page-break-after: always; }
-            #commitmentForm { display: block !important; page-break-before: always; margin-top: 0; }
-            canvas { max-width: 280px !important; margin: 0 auto; }
+            #commitmentForm { display: block !important; page-break-before: always; }
         }
     </style>
 </head>
@@ -61,8 +51,8 @@
     </div>
 
     <div class="header-section">
-        <div class="student-input"><label>Student Name</label><input type="text" id="sName" placeholder="Full Name"></div>
-        <div class="student-input"><label>Reg Number</label><input type="text" id="sID" placeholder="BOPC/..."></div>
+        <div class="student-input"><label>Student Name</label><input type="text" id="sName"></div>
+        <div class="student-input"><label>Reg Number</label><input type="text" id="sID"></div>
         <div class="student-input"><label>Date</label><input type="text" id="curDate" readonly></div>
     </div>
 
@@ -97,12 +87,83 @@
     <div class="action-area">
         <button class="btn btn-analyze" onclick="generateAudit()">GENERATE REPORT</button>
         <button class="btn btn-form" id="formBtn" style="display:none;" onclick="toggleForm()">PREPARE COMMITMENT FORM</button>
-        <button class="btn btn-print" onclick="window.print()">PRINT DUAL-PAGE A4</button>
+        <button class="btn btn-print" style="background:var(--grey); color:white;" onclick="window.print()">PRINT DUAL-PAGE A4</button>
     </div>
 
     <div id="reportOutput">
-        <div class="print-header"><h1>Bola Olat Private College</h1><p>Placement Evaluation Audit</p></div>
         <div class="report-grid">
             <div>
                 <canvas id="radarChart"></canvas>
-                <div id="reason
+                <div id="reasoningArea"></div>
+                <div id="careerArea"></div>
+            </div>
+            <div>
+                <table class="audit-table">
+                    <thead><tr><th>Subject</th><th>Score</th><th>Status</th></tr></thead>
+                    <tbody id="auditBody"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div id="commitmentForm">
+        </div>
+</div>
+
+<script>
+    document.getElementById('curDate').value = new Date().toLocaleDateString();
+    let chartObj = null;
+
+    function generateAudit() {
+        const getDeptData = (cls) => {
+            let sum = 0, items = [];
+            document.querySelectorAll('.'+cls).forEach(i => {
+                let v = parseFloat(i.value) || 0; sum += v;
+                items.push({ n: i.dataset.name, s: v });
+            });
+            items.sort((a,b) => b.s - a.s);
+            return { avg: (sum / (items.length || 1)).toFixed(1), top: items };
+        };
+
+        const sci = getDeptData('sci'); const bus = getDeptData('bus'); const hum = getDeptData('hum');
+        const depts = [{id:"SCIENCE", a:sci.avg, t:sci.top}, {id:"BUSINESS", a:bus.avg, t:bus.top}, {id:"HUMANITIES", a:hum.avg, t:hum.top}].sort((a,b)=>b.a-a.a);
+
+        document.getElementById('reportOutput').style.display = 'block';
+        document.getElementById('formBtn').style.display = 'inline-block';
+        
+        let primary = depts[0];
+        let reasonBox = document.getElementById('reasoningArea');
+
+        // CRITICAL ALERT LOGIC
+        if (primary.a < 40) {
+            reasonBox.className = "critical-alert";
+            reasonBox.innerHTML = `⚠️ CRITICAL ACADEMIC WARNING: <br> 
+            The student's performance is below 40% in all departments. While the ${primary.id} department is the highest relative score, 
+            an immediate Foundational Review and Remedial Support plan is required before departmental placement.`;
+        } else {
+            reasonBox.className = "reasoning-box";
+            reasonBox.innerHTML = `<strong>Primary Placement:</strong> ${primary.id} Department (${primary.avg}%)<br>
+            Aptitude demonstrated in ${primary.top[0].n} and ${primary.top[1].n}.`;
+        }
+
+        // Table & Chart (Remain as per A4 Logic)
+        const body = document.getElementById('auditBody'); body.innerHTML = "";
+        document.querySelectorAll('input[type="number"]').forEach(i => {
+            let v = i.value || 0;
+            let status = v >= 75 ? 'Excellent' : (v >= 50 ? 'Pass' : 'Weak');
+            let color = v < 40 ? 'color:var(--red); font-weight:bold;' : '';
+            body.innerHTML += `<tr style="${color}"><td>${i.previousElementSibling ? i.previousElementSibling.innerText : i.id}</td><td>${v}%</td><td>${status}</td></tr>`;
+        });
+
+        const ctx = document.getElementById('radarChart').getContext('2d');
+        if(chartObj) chartObj.destroy();
+        chartObj = new Chart(ctx, {
+            type: 'radar',
+            data: { labels: ['Science', 'Business', 'Humanities'], datasets: [{ data: [sci.avg, bus.avg, hum.avg], backgroundColor: 'rgba(13, 71, 161, 0.2)', borderColor: '#0d47a1' }] },
+            options: { scales: { r: { beginAtZero: true, max: 100 } } }
+        });
+    }
+    function toggleForm() { document.getElementById('commitmentForm').style.display = 'block'; }
+</script>
+</body>
+</html>
