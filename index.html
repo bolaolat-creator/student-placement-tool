@@ -26,33 +26,23 @@
         /* Report Styles */
         #reportOutput, #commitmentForm { display: none; margin-top: 30px; }
         .report-grid { display: grid; grid-template-columns: 1.2fr 1fr; gap: 40px; }
-        .audit-table { width: 100%; border-collapse: collapse; font-size: 12px; }
-        .audit-table th, .audit-table td { text-align: left; padding: 8px; border-bottom: 1px solid #eee; }
+        .audit-table { width: 100%; border-collapse: collapse; font-size: 11px; }
+        .audit-table th, .audit-table td { text-align: left; padding: 6px; border-bottom: 1px solid #eee; }
         
-        .reasoning-box { background: #e3f2fd; padding: 20px; border-radius: 8px; border-left: 6px solid var(--blue); margin-top: 20px; line-height: 1.6; }
-        .critical-alert { background: #ffebee; border-left: 6px solid var(--red); color: var(--red); padding: 20px; border-radius: 8px; margin-top: 20px; font-weight: bold; }
+        .reasoning-box { background: #e3f2fd; padding: 15px; border-radius: 8px; border-left: 6px solid var(--blue); margin-top: 15px; font-size: 14px; line-height: 1.5; }
+        .critical-alert { background: #ffebee; border-left: 6px solid var(--red); color: var(--red); padding: 15px; border-radius: 8px; margin-top: 15px; font-weight: bold; }
+        .career-box { margin-top: 10px; padding: 10px; background: #f1f8e9; border-radius: 5px; border: 1px solid #c5e1a5; font-size: 13px; }
 
-        /* PRINT ENGINE FOR A4 */
         @media print {
             @page { size: A4; margin: 15mm; }
             body { background: white; padding: 0; }
             .container { box-shadow: none; border: none; padding: 0; max-width: 100%; }
-            .btn, .subject-grid, .header-section, .action-area, .school-header { display: none !important; }
-            
-            #reportOutput { 
-                display: block !important; 
-                page-break-after: always; 
-            }
-            #commitmentForm { 
-                display: block !important; 
-                page-break-before: always;
-                margin-top: 0;
-                padding-top: 20px;
-            }
+            .btn, .subject-grid, .header-section, .school-header, .action-area { display: none !important; }
+            #reportOutput { display: block !important; page-break-after: always; }
+            #commitmentForm { display: block !important; page-break-before: always; margin-top: 0; padding-top: 20px; }
             .print-only-title { display: block !important; text-align: center; border-bottom: 2px solid var(--blue); margin-bottom: 20px; padding-bottom: 10px; }
         }
         .print-only-title { display: none; }
-        
         .btn { padding: 12px 25px; border: none; border-radius: 5px; font-weight: bold; cursor: pointer; margin: 5px; color: white; }
         .btn-analyze { background: var(--blue); }
         .btn-form { background: var(--orange); }
@@ -112,15 +102,12 @@
     </div>
 
     <div id="reportOutput">
-        <div class="print-only-title">
-            <h2 style="margin:0;">BOLA OLAT PRIVATE COLLEGE</h2>
-            <p>Placement Audit Report</p>
-        </div>
-        <h3 style="text-align:center;">STUDENT PLACEMENT AUDIT</h3>
+        <div class="print-only-title"><h2>BOLA OLAT PRIVATE COLLEGE</h2><p>Placement Audit Report</p></div>
         <div class="report-grid">
             <div>
                 <canvas id="radarChart"></canvas>
                 <div id="reasoningArea"></div>
+                <div id="careerArea" class="career-box"></div>
             </div>
             <div>
                 <table class="audit-table">
@@ -132,25 +119,15 @@
     </div>
 
     <div id="commitmentForm">
-        <div class="print-only-title">
-            <h2 style="margin:0;">BOLA OLAT PRIVATE COLLEGE</h2>
-            <p>Official Academic Commitment Form</p>
-        </div>
+        <div class="print-only-title"><h2>BOLA OLAT PRIVATE COLLEGE</h2><p>Official Commitment Form</p></div>
         <div style="border: 2px solid #333; padding: 30px; line-height: 2;">
             <h3 style="text-align:center;">ACADEMIC COMMITMENT (PLACEMENT OVERRIDE)</h3>
-            <p>I, parent/guardian of <b><span id="fName"></span></b>, acknowledge the school's audit recommending the 
-            <b><span id="fRec"></span></b> Department.</p>
-            
+            <p>I, parent/guardian of <b><span id="fName"></span></b>, acknowledge the school's audit recommending the <b><span id="fRec"></span></b> Department.</p>
             <p>Despite the data, we choose to override the recommendation for: ________________________.</p>
-            
-            <p><strong>UNDERTAKING:</strong><br>
-            1. The student is on 1-term academic probation.<br>
-            2. A minimum score of 60% must be achieved in all core subjects.<br>
-            3. The school reserves the right to re-assign the student if targets are not met.</p>
-
-            <div style="margin-top:60px; display:grid; grid-template-columns: 1fr 1fr; gap:30px;">
-                <div style="border-top: 1px solid #000; text-align:center;">Parent Signature</div>
-                <div style="border-top: 1px solid #000; text-align:center;">Principal Signature</div>
+            <p><strong>UNDERTAKING:</strong> One term probation | Min 60% Avg in Core Subjects | Possible transition if targets missed.</p>
+            <div style="margin-top:60px; display:grid; grid-template-columns: 1fr 1fr; gap:30px; text-align:center;">
+                <div style="border-top: 1px solid #000;">Parent Signature</div>
+                <div style="border-top: 1px solid #000;">Principal Signature</div>
             </div>
         </div>
     </div>
@@ -160,61 +137,72 @@
     document.getElementById('curDate').value = new Date().toLocaleDateString();
     let chartObj = null;
 
+    const careerPaths = {
+        "SCIENCE": ["Medicine", "Engineering", "Pharmacist", "Data Scientist", "Architect"],
+        "BUSINESS": ["Accountant", "Investment Banker", "Economist", "Marketing Manager", "Entrepreneur"],
+        "HUMANITIES": ["Lawyer", "Journalist", "Diplomat", "Public Administrator", "Author"]
+    };
+
     function generateAudit() {
-        const getDeptData = (cls) => {
-            let sum = 0, count = 0;
+        const getDeptDetails = (cls) => {
+            let sum = 0, items = [];
             document.querySelectorAll('.'+cls).forEach(i => {
-                sum += parseFloat(i.value) || 0;
-                count++;
+                let s = parseFloat(i.value) || 0;
+                sum += s;
+                items.push({ name: i.dataset.name, score: s });
             });
-            return (sum / (count || 1)).toFixed(1);
+            items.sort((a,b) => b.score - a.score);
+            return { avg: (sum / items.length).toFixed(1), topSubjects: items.slice(0, 2) };
         };
 
+        const sci = getDeptDetails('sci');
+        const bus = getDeptDetails('bus');
+        const hum = getDeptDetails('hum');
+
         const scores = [
-            { id: "SCIENCE", avg: getDeptData('sci') },
-            { id: "BUSINESS", avg: getDeptData('bus') },
-            { id: "HUMANITIES", avg: getDeptData('hum') }
+            { id: "SCIENCE", avg: sci.avg, best: sci.topSubjects },
+            { id: "BUSINESS", avg: bus.avg, best: bus.topSubjects },
+            { id: "HUMANITIES", avg: hum.avg, best: hum.topSubjects }
         ].sort((a,b) => b.avg - a.avg);
 
         document.getElementById('reportOutput').style.display = 'block';
         document.getElementById('formBtn').style.display = 'inline-block';
         
         let reasonBox = document.getElementById('reasoningArea');
-        
-        // LOW SCORE LOGIC
+        let careerBox = document.getElementById('careerArea');
+
         if (scores[0].avg < 40) {
             reasonBox.className = "critical-alert";
-            reasonBox.innerHTML = `<strong>⚠️ CRITICAL ACADEMIC ALERT:</strong><br>
-            All departmental averages are below 40%. The student is currently at risk of academic failure. 
-            <strong>Recommendation:</strong> Foundational Remedial Plan and close monitoring.`;
+            reasonBox.innerHTML = `<strong>⚠️ CRITICAL ACADEMIC ALERT:</strong><br>Performance is below 40% in all departments. A Remedial Foundational plan is required.`;
+            careerBox.style.display = 'none';
         } else {
             reasonBox.className = "reasoning-box";
-            reasonBox.innerHTML = `<strong>1st Recommendation:</strong> ${scores[0].id} (${scores[0].avg}%)<br>
-            <strong>2nd Best Option:</strong> ${scores[1].id} (${scores[1].avg}%)`;
+            reasonBox.innerHTML = `<strong>Primary Placement:</strong> ${scores[0].id} (${scores[0].avg}%)<br>
+            <strong>Reason:</strong> Student shows the highest aptitude in <b>${scores[0].best[0].name}</b> and <b>${scores[0].best[1].name}</b>.<br>
+            <strong>Alternative Path:</strong> ${scores[1].id} (${scores[1].avg}%)`;
+            
+            careerBox.style.display = 'block';
+            careerBox.innerHTML = `<strong>Future Career Paths:</strong><br>${careerPaths[scores[0].id].join(" • ")}`;
         }
 
-        // Populate Form
         document.getElementById('fName').innerText = document.getElementById('sName').value || "[Student Name]";
         document.getElementById('fRec').innerText = scores[0].id;
 
-        // Table
         const body = document.getElementById('auditBody');
         body.innerHTML = "";
         document.querySelectorAll('input[type="number"]').forEach(i => {
             let s = parseFloat(i.value) || 0;
             let label = i.previousElementSibling ? i.previousElementSibling.innerText : i.id;
-            let color = s < 40 ? 'color:red; font-weight:bold;' : '';
-            body.innerHTML += `<tr style="${color}"><td>${label}</td><td>${s}%</td><td>${s>=70?'Excellent':(s>=50?'Pass':'Weak')}</td></tr>`;
+            body.innerHTML += `<tr style="${s < 40 ? 'color:red; font-weight:bold;' : ''}"><td>${label}</td><td>${s}%</td><td>${s>=70?'Excellent':(s>=50?'Pass':'Weak')}</td></tr>`;
         });
 
-        // Chart
         const ctx = document.getElementById('radarChart').getContext('2d');
         if(chartObj) chartObj.destroy();
         chartObj = new Chart(ctx, {
             type: 'radar',
             data: {
                 labels: ['Science', 'Business', 'Humanities'],
-                datasets: [{ data: [scores.find(d=>d.id=="SCIENCE").avg, scores.find(d=>d.id=="BUSINESS").avg, scores.find(d=>d.id=="HUMANITIES").avg], backgroundColor: 'rgba(13, 71, 161, 0.2)', borderColor: '#0d47a1' }]
+                datasets: [{ data: [sci.avg, bus.avg, hum.avg], backgroundColor: 'rgba(13, 71, 161, 0.2)', borderColor: '#0d47a1' }]
             },
             options: { scales: { r: { beginAtZero: true, max: 100 } }, plugins: { legend: { display: false } } }
         });
