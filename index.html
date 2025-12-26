@@ -10,7 +10,6 @@
         body { font-family: 'Segoe UI', Arial, sans-serif; background: #f4f6f9; padding: 20px; color: #333; }
         .container { max-width: 1000px; margin: 0 auto; background: white; padding: 40px; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.1); }
         
-        /* Branding & UI */
         .school-header { text-align: center; margin-bottom: 30px; border-bottom: 4px double var(--blue); padding-bottom: 20px; }
         .school-name { font-size: 32px; font-weight: bold; color: var(--blue); margin: 0; text-transform: uppercase; }
         .header-section { display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 15px; margin-bottom: 30px; }
@@ -23,7 +22,6 @@
         .subject-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
         .subject-row input { width: 55px; padding: 5px; text-align: center; border: 1px solid #ccc; border-radius: 4px; }
 
-        /* Report Styles */
         #reportOutput, #commitmentForm { display: none; margin-top: 30px; }
         .report-grid { display: grid; grid-template-columns: 1.2fr 1fr; gap: 40px; }
         .audit-table { width: 100%; border-collapse: collapse; font-size: 11px; }
@@ -58,8 +56,8 @@
     </div>
 
     <div class="header-section">
-        <div class="student-input"><label>Student Name</label><input type="text" id="sName"></div>
-        <div class="student-input"><label>Admission No</label><input type="text" id="sID"></div>
+        <div class="student-input"><label>Student Name</label><input type="text" id="sName" placeholder="Enter Name"></div>
+        <div class="student-input"><label>Admission No</label><input type="text" id="sID" placeholder="ID Number"></div>
         <div class="student-input"><label>Date</label><input type="text" id="curDate" readonly></div>
     </div>
 
@@ -152,7 +150,8 @@
                 items.push({ name: i.dataset.name, score: s });
             });
             items.sort((a,b) => b.score - a.score);
-            return { avg: (sum / items.length).toFixed(1), topSubjects: items.slice(0, 2) };
+            let avgValue = items.length > 0 ? (sum / items.length).toFixed(1) : 0;
+            return { avg: avgValue, topSubjects: items.slice(0, 2) };
         };
 
         const sci = getDeptDetails('sci');
@@ -171,19 +170,15 @@
         let reasonBox = document.getElementById('reasoningArea');
         let careerBox = document.getElementById('careerArea');
 
-        // UPDATED: CRITICAL ALERT NOW TRIGGERS BELOW 50%
         if (scores[0].avg < 50) {
             reasonBox.className = "critical-alert";
-            reasonBox.innerHTML = `<strong>⚠️ CRITICAL ACADEMIC ALERT:</strong><br>
-            Performance is below the 50% minimum standard in all departments. 
-            <strong>Recommendation:</strong> Foundational Remedial Plan is mandatory before departmental placement.`;
+            reasonBox.innerHTML = `<strong>⚠️ CRITICAL ACADEMIC ALERT:</strong><br>Performance is below the 50% minimum standard in all departments. <br><strong>Recommendation:</strong> Foundational Remedial Plan is required.`;
             careerBox.style.display = 'none';
         } else {
             reasonBox.className = "reasoning-box";
             reasonBox.innerHTML = `<strong>Primary Placement:</strong> ${scores[0].id} (${scores[0].avg}%)<br>
-            <strong>Reason:</strong> Student shows the highest aptitude in <b>${scores[0].best[0].name}</b> and <b>${scores[0].best[1].name}</b>.<br>
+            <strong>Reason:</strong> Student shows highest aptitude in <b>${scores[0].best[0].name}</b> and <b>${scores[0].best[1].name}</b>.<br>
             <strong>Alternative Path:</strong> ${scores[1].id} (${scores[1].avg}%)`;
-            
             careerBox.style.display = 'block';
             careerBox.innerHTML = `<strong>Future Career Paths:</strong><br>${careerPaths[scores[0].id].join(" • ")}`;
         }
@@ -195,17 +190,9 @@
         body.innerHTML = "";
         document.querySelectorAll('input[type="number"]').forEach(i => {
             let s = parseFloat(i.value) || 0;
-            let label = i.previousElementSibling ? i.previousElementSibling.innerText : i.id;
-            
-            // UPDATED: REMARK LOGIC FOR 50% MINIMUM
-            let remark = "Weak";
-            if (s >= 75) remark = "Excellent";
-            else if (s >= 50) remark = "Pass";
-
-            // Visual highlight for scores under 50
-            let color = s < 50 ? 'color:red; font-weight:bold;' : '';
-            
-            body.innerHTML += `<tr style="${color}"><td>${label}</td><td>${s}%</td><td>${remark}</td></tr>`;
+            let label = i.previousElementSibling ? i.previousElementSibling.innerText : "Subject";
+            let remark = s >= 75 ? "Excellent" : (s >= 50 ? "Pass" : "Weak");
+            body.innerHTML += `<tr style="${s < 50 ? 'color:red; font-weight:bold;' : ''}"><td>${label}</td><td>${s}%</td><td>${remark}</td></tr>`;
         });
 
         const ctx = document.getElementById('radarChart').getContext('2d');
@@ -219,5 +206,17 @@
             options: { scales: { r: { beginAtZero: true, max: 100 } }, plugins: { legend: { display: false } } }
         });
     }
-    // ... rest of the toggleForm function
+
+    function toggleForm() {
+        const form = document.getElementById('commitmentForm');
+        if (form.style.display === 'block') {
+            form.style.display = 'none';
+        } else {
+            form.style.display = 'block';
+            // Scroll to the form so the user sees it
+            form.scrollIntoView({ behavior: 'smooth' });
+        }
+    }
 </script>
+</body>
+</html>
